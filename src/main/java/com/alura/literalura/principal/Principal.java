@@ -1,82 +1,26 @@
 package com.alura.literalura.principal;
 
 
+
 import com.alura.literalura.model.Datos;
 import com.alura.literalura.model.DatosLibros;
+import com.alura.literalura.model.Libro;
+import com.alura.literalura.repository.LibroRepository;
 import com.alura.literalura.service.ConsumoAPI;
 import com.alura.literalura.service.ConvierteDatos;
-import java.util.Comparator;
-import java.util.DoubleSummaryStatistics;
-import java.util.Optional;
 import java.util.Scanner;
-import java.util.stream.Collectors;
-
 import java.util.*;
-import java.util.stream.Collectors;
 
-//public class Principal {
-//    private static Scanner teclado = new Scanner(System.in);
-//    private static final String URL_BASE = "https://gutendex.com/books/";
-//    private static ConsumoAPI consumoApi = new ConsumoAPI();
-//    private static ConvierteDatos conversor = new ConvierteDatos();
-//    private List<DatosLibros> datosLibros = new ArrayList<>();
-//
-//
 
-//
-//
-//        private DatosLibros getDatosSerie() {
-//            System.out.println("Escribe el nombre de la serie que deseas buscar");
-//            var nombreSerie = teclado.nextLine();
-//            var json = consumoApi.obtenerDatos(URL_BASE + nombreSerie.replace(" ", "+"));
-//            System.out.println(json);
-//            DatosLibros datos = conversor.obtenerDatos(json, DatosLibros.class);
-//            return datos;
-//        }
-////        private void buscarEpisodioPorSerie() {
-////            mostrarSeriesBuscadas();
-////            System.out.println("Escribe el nombre de la serie de la cual quieres ver los Episodios");
-////            var nombreSerie = teclado.nextLine();
-////
-////            Optional<Serie> serie = series.stream()
-////                    .filter(s -> s.getTitulo().toLowerCase().contains(nombreSerie.toLowerCase()))
-////                    .findFirst();
-////
-////            if(serie.isPresent()){
-////                var serieEncontrada = serie.get();
-////                List<DatosTemporadas> temporadas = new ArrayList<>();
-////
-////                for (int i = 1; i <= serieEncontrada.getTotalTemporadas(); i++) {
-////                    var json = consumoApi.obtenerDatos(URL_BASE + serieEncontrada.getTitulo().replace(" ", "+") + "&season=" + i + API_KEY);
-////                    DatosTemporadas datosTemporada = conversor.obtenerDatos(json, DatosTemporadas.class);
-////                    temporadas.add(datosTemporada);
-////                }
-////                temporadas.forEach(System.out::println);
-////
-////                List<Episodio> episodios = temporadas.stream()
-////                        .flatMap(d -> d.episodios().stream()
-////                                .map(e -> new Episodio(d.numero(), e)))
-////                        .collect(Collectors.toList());
-////
-////                serieEncontrada.setEpisodios(episodios);
-////                repositorio.save(serieEncontrada);
-////            }
-////            //DatosSerie datosSerie = getDatosSerie();
-////
-////
-////        }
-////
-//        private void buscarLibroWeb() {
-//            DatosLibros datos = getDatosSerie();
-//            datosLibros.add(datos);
-//            System.out.println(datos);
-//        }
 public class Principal {
     private static final String URL_BASE = "https://gutendex.com/books/";
     private static ConsumoAPI consumoAPI = new ConsumoAPI();
     private static ConvierteDatos conversor = new ConvierteDatos();
     private static Scanner teclado = new Scanner(System.in);
+    private List<Libro> libros;
     private List<DatosLibros> datosLibros = new ArrayList<>();
+    private LibroRepository repositorio;
+
     //private List<Libro> libro;
 
     public void muestraElMenu() {
@@ -84,8 +28,8 @@ public class Principal {
         while (opcion != 0) {
             var menu = """
                     1 - Buscar libros por titulo
-                    2 - Bu
-                    3 - Mo
+                    2 - Mostrar libros buscados
+                    3 - Muestrta autores de los libros consultados
                     4 - Buscar
                     5 - Top 
                     6 - Buscar 
@@ -104,9 +48,9 @@ public class Principal {
                 case 2:
                     mostrarLibrosBuscados();
                     break;
-//                case 3:
-//                    mostrarSeriesBuscadas();
-//                    break;
+                case 3:
+                    mostrarListaAutores();
+                    break;
 //                case 4:
 //                    buscarSeriesPorTitulo();
 //                    break;
@@ -138,41 +82,41 @@ public class Principal {
 
 
 
-    private DatosLibros getDatosLibros(){
-        System.out.println("Escribe el nombre del libro que deseas buscar");
-        var tituloLibro = teclado.nextLine();
-        var json = consumoAPI.obtenerDatos(URL_BASE + "?search=" + tituloLibro.replace(" ","+"));
-        System.out.println(json);
-        DatosLibros datos = conversor.obtenerDatos(json, DatosLibros.class);
-        return datos;
-    }
-
     private void buscarLibroWeb() {
-//        DatosLibros datos = getDatosLibros();
-//        datosLibros.add(datos);
-//        System.out.println(datos);
         System.out.println("Ingresa el nombre del libro que desea buscar");
         var tituloLibro = teclado.nextLine();
         var json = consumoAPI.obtenerDatos(URL_BASE + "?search=" + tituloLibro.replace(" ","+"));
+        System.out.println("JSON recibido: " + json);
         var datosBusqueda = conversor.obtenerDatos(json, Datos.class);
         Optional<DatosLibros> libroBuscado = datosBusqueda.resultados().stream()
                 .filter(l -> l.titulo().toUpperCase().contains(tituloLibro.toUpperCase()))
                 .findFirst();
         if(libroBuscado.isPresent()){
+            DatosLibros libroEncontrado = libroBuscado.get();//
+            datosLibros.add(libroEncontrado);//
             System.out.println("Libro Encontrado");
-            System.out.println(libroBuscado.get());
+            System.out.println(libroEncontrado);
+
         }else {
             System.out.println("Libro no encontrado");
         }
     }
 
     private void mostrarLibrosBuscados() {
-//        List<Libros> series = repositorio.findAll(); //documentación springData Core Concepts
-//        findAll trae lo de la lista
-//        List<Serie> series = new ArrayList<>();
-//        series = datosSeries.stream()
-//                .map(d -> new Serie(d))
-//                .collect(Collectors.toList());
+        if (datosLibros.isEmpty()){
+            System.out.println("No hay libros buscados");
+        } else {
+            datosLibros.forEach(System.out::println);
+        }
+    }
+
+    private void mostrarListaAutores() {
+        if(datosLibros.isEmpty()){
+            System.out.println("No hay libros buscados");
+        } else {
+            datosLibros.stream().map(DatosLibros::autor).distinct()
+                    .forEach(System.out::println);
+        }
 
     }
 
