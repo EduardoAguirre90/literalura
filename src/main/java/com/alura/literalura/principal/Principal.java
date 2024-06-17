@@ -3,13 +3,17 @@ package com.alura.literalura.principal;
 
 
 import com.alura.literalura.model.Datos;
+import com.alura.literalura.model.DatosAutor;
 import com.alura.literalura.model.DatosLibros;
 import com.alura.literalura.model.Libro;
 import com.alura.literalura.repository.LibroRepository;
 import com.alura.literalura.service.ConsumoAPI;
 import com.alura.literalura.service.ConvierteDatos;
+
+import java.time.LocalDate;
 import java.util.Scanner;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class Principal {
@@ -30,7 +34,7 @@ public class Principal {
                     1 - Buscar libros por titulo
                     2 - Mostrar libros buscados
                     3 - Muestrta autores de los libros consultados
-                    4 - Buscar
+                    4 - Buscar autores vivos en determinado año de libros consultados
                     5 - Top 
                     6 - Buscar 
 
@@ -51,9 +55,9 @@ public class Principal {
                 case 3:
                     mostrarListaAutores();
                     break;
-//                case 4:
-//                    buscarSeriesPorTitulo();
-//                    break;
+                case 4:
+                    buscarAutoresVivosPorFecha();
+                    break;
 //                case 5:
 //                    buscarTop5Series();
 //                    break;
@@ -79,6 +83,7 @@ public class Principal {
             }
         }
     }
+
 
 
 
@@ -117,6 +122,29 @@ public class Principal {
             datosLibros.stream().map(DatosLibros::autor).distinct()
                     .forEach(System.out::println);
         }
+    }
+
+
+    private void buscarAutoresVivosPorFecha() {
+        System.out.println("Ingresa el año para buscar autores vivos:");
+        int año = teclado.nextInt();
+        teclado.nextLine(); // Consumir la nueva línea
+
+        List<DatosAutor> autoresVivos = datosLibros.stream()
+                .flatMap(libro -> libro.autor().stream())
+                .filter(autor -> {
+                    int nacimiento = Integer.parseInt(autor.fechaDeNacimiento());
+                    int muerte = autor.fechaDeMuerte().isEmpty() ? Integer.MAX_VALUE : Integer.parseInt(autor.fechaDeMuerte());
+                    return año >= nacimiento && año <= muerte;
+                })
+                .collect(Collectors.toList());
+        if (autoresVivos.isEmpty()){
+            System.out.println("No se encontro ningun autor que viva en el año " + año);
+        } else {
+            System.out.println("Los autores que vivieron en el año " + año + " son:");
+            autoresVivos.forEach(System.out::println);
+        }
+
 
     }
 
@@ -128,54 +156,7 @@ public class Principal {
 
 
 
-//        private void buscarLibroWeb() {
-//            DatosLibros datos = getDatosSerie();
-//            datosLibros.add(datos);
-//            System.out.println(datos);
-//        }
-
-
-//        var json = consumoAPI.obtenerDatos(URL_BASE);
-//        System.out.println(json);
-//
-//        var datos = conversor.obtenerDatos(json, Datos.class);
-//        System.out.println(datos);
-//
-//        //Top 10 libros mas descargados
-//        System.out.println("10 libros mas descargados");
-//        datos.resultados().stream()
-//                .sorted(Comparator.comparing(DatosLibros::numeroDeDescargas).reversed())
-//                .limit(10)
-//                .map(l -> l.titulo().toUpperCase())
-//                .forEach(System.out::println);
-//
-//        //Busqueda de libros por nombre
-//        System.out.println("Ingresa el nombre del libro que desea buscar");
-//        var tituloLibro = teclado.nextLine();
-//        json = consumoAPI.obtenerDatos(URL_BASE + "?search=" + tituloLibro.replace(" ","+"));
-//        var datosBusqueda = conversor.obtenerDatos(json, Datos.class);
-//        Optional<DatosLibros> libroBuscado = datosBusqueda.resultados().stream()
-//                .filter(l -> l.titulo().toUpperCase().contains(tituloLibro.toUpperCase()))
-//                .findFirst();
-//        if(libroBuscado.isPresent()){
-//            System.out.println("Libro Encontrado");
-//            System.out.println(libroBuscado.get());
-//        }else {
-//            System.out.println("Libro no encontrado");
-//        }
-//
-//        //Trabajando con estadisticas
-//
-//        DoubleSummaryStatistics est = datos.resultados().stream()
-//                .filter(d -> d.numeroDeDescargas() > 0 )
-//                .collect(Collectors.summarizingDouble(DatosLibros::numeroDeDescargas));
-//        System.out.println("Cantidad media de descargas: " +est.getAverage());
-//        System.out.println("Cantidad máxima de descargas: " +est.getMax());
-//        System.out.println("Cantidad mínima de descargas: " +est.getMin());
-//        System.out.println("Cantidad de registros evaluados para calculas las estadisticas : " +est.getCount());
-
-    //}
 
 
 
-//}
+

@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.Optional;
 
 public interface LibroRepository extends JpaRepository<Libro,Long> {
-    Optional<Libro> findByTituloContainsIgnoreCase(String nombreSerie);
+    Optional<Libro> findByTituloContainsIgnoreCase(String nombreLibro);
 
 
 

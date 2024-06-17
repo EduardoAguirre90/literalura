@@ -10,4 +10,5 @@ public record DatosAutor(
         @JsonAlias("birth_year") String fechaDeNacimiento,
         @JsonAlias("death_year") String fechaDeMuerte
 ) {
+
 }
