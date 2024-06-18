@@ -21,9 +21,14 @@ public class Principal {
     private static ConsumoAPI consumoAPI = new ConsumoAPI();
     private static ConvierteDatos conversor = new ConvierteDatos();
     private static Scanner teclado = new Scanner(System.in);
-    private List<Libro> libros;
+    //private List<Libro> libros;
     private List<DatosLibros> datosLibros = new ArrayList<>();
     private LibroRepository repositorio;
+
+    //se añade clase repositorio desde la appLiteralura
+    public Principal(LibroRepository repository) {
+        this.repositorio = repository;
+    }
 
     //private List<Libro> libro;
 
@@ -31,13 +36,10 @@ public class Principal {
         var opcion = -1;
         while (opcion != 0) {
             var menu = """
-                    1 - Buscar libros por titulo
+                    1 - Buscar libros por titulo (BDD)
                     2 - Mostrar libros buscados
                     3 - Muestrta autores de los libros consultados
                     4 - Buscar autores vivos en determinado año de libros consultados
-                    5 - Top 
-                    6 - Buscar 
-
 
                     0 - Salir
                     """;
@@ -64,16 +66,6 @@ public class Principal {
 //                case 6:
 //                    buscarSeriesPorCategoria();
 //                    break;
-//                case 7:
-//                    filtrarSeriesPorTemporadaYEvaluacion();
-//                    break;
-//                case 8:
-//                    buscarEpisodiosPorTitulo(); //estos son los metodos utiliozados
-//                    break;
-//                case 9:
-//                    buscarTop5Episodios();
-//                    break;
-
 
                 case 0:
                     System.out.println("Cerrando la aplicación...");
@@ -85,7 +77,22 @@ public class Principal {
     }
 
 
+    public Libro convertirADatosEntidad(DatosLibros datosLibros) {
+        Libro libro = new Libro();
+        libro.setTitulo(datosLibros.titulo());
+        libro.setAutor(datosLibros.autor().stream().map(DatosAutor::nombre).collect(Collectors.toList()).toString());
+        libro.setIdiomas(String.join(", ", datosLibros.idiomas()));
+        libro.setNumeroDeDescargas(datosLibros.numeroDeDescargas());
 
+        // Extraer fechas de nacimiento y muerte del autor
+        if (!datosLibros.autor().isEmpty()) {
+            DatosAutor primerAutor = datosLibros.autor().get(0);
+            libro.setFechaDeNacimiento(primerAutor.fechaDeNacimiento());
+            libro.setFechaDeMuerte(primerAutor.fechaDeMuerte());
+        }
+
+        return libro;
+    }
 
     private void buscarLibroWeb() {
         System.out.println("Ingresa el nombre del libro que desea buscar");
@@ -98,14 +105,20 @@ public class Principal {
                 .findFirst();
         if(libroBuscado.isPresent()){
             DatosLibros libroEncontrado = libroBuscado.get();//
-            datosLibros.add(libroEncontrado);//
+//            System.out.println("Fecha de nacimiento: " + libroEncontrado.fechaDeNacimiento());
+//            System.out.println("Fecha de Muerte: " + libroEncontrado.fechaDeMuerte());
+//            System.out.println("Datos Autor: " + libroEncontrado.autor());
+            datosLibros.add(libroEncontrado);
+            Libro libroEnt = convertirADatosEntidad(libroEncontrado);
+            repositorio.save(libroEnt);
             System.out.println("Libro Encontrado");
             System.out.println(libroEncontrado);
-
         }else {
             System.out.println("Libro no encontrado");
         }
     }
+
+
 
     private void mostrarLibrosBuscados() {
         if (datosLibros.isEmpty()){

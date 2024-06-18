@@ -2,6 +2,8 @@ package com.alura.literalura.model;
 
 import jakarta.persistence.*;
 
+import java.util.stream.Collectors;
+
 @Entity
 @Table(name = "libros")
 
@@ -16,6 +18,7 @@ public class Libro {
     private Double numeroDeDescargas;
     private String fechaDeNacimiento;
     private String fechaDeMuerte;
+
 
 
     public Long getId() {
@@ -86,12 +89,13 @@ public class Libro {
     @Override
     public String toString() {
         return
-                "DatosLibros{" +
+                "DatosLibros" +
                 "titulo='" + titulo + '\'' +
                 ", autor='" + autor + '\'' +
                 ", fechaNacimientoAutor='" + fechaDeNacimiento + '\'' +
                 ", fechaMuerteAutor='" + fechaDeMuerte + '\'' +
-                '}';
+                ", idiomas='" + idiomas + '\'' +
+                ", numeroDeDescargas='" + numeroDeDescargas + '\'';
     }
 
 }
