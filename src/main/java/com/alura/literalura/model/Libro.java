@@ -2,6 +2,7 @@ package com.alura.literalura.model;
 
 import jakarta.persistence.*;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Entity
@@ -13,13 +14,17 @@ public class Libro {
     private Long Id;
     @Column(unique = true)
     private String titulo;
-    private String autor;
+
+    private String nombre;
     private String idiomas;
     private Double numeroDeDescargas;
     private String fechaDeNacimiento;
     private String fechaDeMuerte;
 
+    private String autor;
 
+//    @ManyToMany(mappedBy = "autores")
+//    private List<Libro> libros;
 
     public Long getId() {
         return Id;
@@ -39,6 +44,14 @@ public class Libro {
 
     public String getAutor() {
         return autor;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
     }
 
     public void setAutor(String autor) {

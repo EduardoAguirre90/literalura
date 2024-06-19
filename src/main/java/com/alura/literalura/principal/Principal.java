@@ -2,15 +2,13 @@ package com.alura.literalura.principal;
 
 
 
-import com.alura.literalura.model.Datos;
-import com.alura.literalura.model.DatosAutor;
-import com.alura.literalura.model.DatosLibros;
-import com.alura.literalura.model.Libro;
+import com.alura.literalura.model.*;
+//import com.alura.literalura.repository.AutorRepository;
 import com.alura.literalura.repository.LibroRepository;
 import com.alura.literalura.service.ConsumoAPI;
 import com.alura.literalura.service.ConvierteDatos;
 
-import java.time.LocalDate;
+
 import java.util.Scanner;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -24,10 +22,12 @@ public class Principal {
     //private List<Libro> libros;
     private List<DatosLibros> datosLibros = new ArrayList<>();
     private LibroRepository repositorio;
+    //private AutorRepository autorRepository;
 
     //se añade clase repositorio desde la appLiteralura
     public Principal(LibroRepository repository) {
         this.repositorio = repository;
+        //this.autorRepository = autorRepository;
     }
 
     //private List<Libro> libro;
@@ -40,6 +40,7 @@ public class Principal {
                     2 - Mostrar libros buscados
                     3 - Muestrta autores de los libros consultados
                     4 - Buscar autores vivos en determinado año de libros consultados
+                    5 - Consultar cantidad de libros por idioma
 
                     0 - Salir
                     """;
@@ -60,11 +61,11 @@ public class Principal {
                 case 4:
                     buscarAutoresVivosPorFecha();
                     break;
-//                case 5:
-//                    buscarTop5Series();
-//                    break;
+                case 5:
+                    CantidadDeLibrosPorIdioma();
+                    break;
 //                case 6:
-//                    buscarSeriesPorCategoria();
+//                    ListarAutoresVivosEnDeterminadoAño();
 //                    break;
 
                 case 0:
@@ -75,6 +76,8 @@ public class Principal {
             }
         }
     }
+
+
 
 
     public Libro convertirADatosEntidad(DatosLibros datosLibros) {
@@ -90,7 +93,6 @@ public class Principal {
             libro.setFechaDeNacimiento(primerAutor.fechaDeNacimiento());
             libro.setFechaDeMuerte(primerAutor.fechaDeMuerte());
         }
-
         return libro;
     }
 
@@ -112,7 +114,7 @@ public class Principal {
             Libro libroEnt = convertirADatosEntidad(libroEncontrado);
             repositorio.save(libroEnt);
             System.out.println("Libro Encontrado");
-            System.out.println(libroEncontrado);
+            System.out.println(libroEnt);
         }else {
             System.out.println("Libro no encontrado");
         }
@@ -124,6 +126,7 @@ public class Principal {
         if (datosLibros.isEmpty()){
             System.out.println("No hay libros buscados");
         } else {
+            System.out.println("Los libros buscados son: ");
             datosLibros.forEach(System.out::println);
         }
     }
@@ -142,6 +145,8 @@ public class Principal {
         System.out.println("Ingresa el año para buscar autores vivos:");
         int año = teclado.nextInt();
         teclado.nextLine(); // Consumir la nueva línea
+        //de base de datos
+
 
         List<DatosAutor> autoresVivos = datosLibros.stream()
                 .flatMap(libro -> libro.autor().stream())
@@ -155,10 +160,17 @@ public class Principal {
             System.out.println("No se encontro ningun autor que viva en el año " + año);
         } else {
             System.out.println("Los autores que vivieron en el año " + año + " son:");
+
             autoresVivos.forEach(System.out::println);
         }
+    }
 
 
+    private void CantidadDeLibrosPorIdioma() {
+        System.out.println("Ingresa el idioma para ver la estadística:(en ingles "+"en"+" y en español "+"es"+")");
+        String idioma = teclado.nextLine();
+        long cantidad = repositorio.countByIdiomasContaining(idioma);
+        System.out.println("Cantidad de libros en " + idioma + ": " + cantidad);
     }
 
 
