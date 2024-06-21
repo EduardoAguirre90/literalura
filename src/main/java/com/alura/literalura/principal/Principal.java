@@ -46,6 +46,7 @@ public class Principal {
                     3 - Muestrta autores de los libros consultados
                     4 - Buscar autores vivos en determinado año de libros consultados (BDD)
                     5 - Consultar cantidad de libros por idioma
+                    6 - Top 10 libros mas descargados
 
                     0 - Salir
                     """;
@@ -69,9 +70,10 @@ public class Principal {
                 case 5:
                     CantidadDeLibrosPorIdioma();
                     break;
-//                case 6:
-//                    ListarAutoresVivosEnDeterminadoAño();
-//                    break;
+
+               case 6:
+                    Top10LibrosMasDescargados();
+                    break;
 
                 case 0:
                     System.out.println("Cerrando la aplicación...");
@@ -84,7 +86,8 @@ public class Principal {
 
 
 
-////////////////////////AÑADIR NUEVO LIBRO BDD////////////////////////////////////////
+
+    ////////////////////////AÑADIR NUEVO LIBRO BDD////////////////////////////////////////
     public Libro convertirADatosEntidad(DatosLibros datosLibros) {
         Libro libro = new Libro();
         libro.setTitulo(datosLibros.titulo());
@@ -207,7 +210,19 @@ public class Principal {
         System.out.println("Cantidad de libros en " + idioma + ": " + cantidad);
     }
 
-
+    ////////////////TOP 10 LIBROS MAS DESCARGADOS///////////////////////////////
+    private void Top10LibrosMasDescargados() {
+        System.out.println("Los 10 libros mas descargados son: ");
+        teclado.nextLine();
+        var tituloLibro = teclado.nextLine();
+        var json = consumoAPI.obtenerDatos(URL_BASE + "?search=" + tituloLibro.replace(" ","+"));
+        var datosBusqueda = conversor.obtenerDatos(json, Datos.class);
+        datosBusqueda.resultados().stream()
+                .sorted(Comparator.comparing(DatosLibros::numeroDeDescargas).reversed())
+                .limit(10)
+                .map(l -> l.titulo().toUpperCase())
+                .forEach(System.out::println);
+    }
 
 }
 
