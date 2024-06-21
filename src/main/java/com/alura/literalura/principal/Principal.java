@@ -4,16 +4,20 @@ package com.alura.literalura.principal;
 
 import com.alura.literalura.model.*;
 //import com.alura.literalura.repository.AutorRepository;
+import com.alura.literalura.repository.AutorRepository;
 import com.alura.literalura.repository.LibroRepository;
 import com.alura.literalura.service.ConsumoAPI;
 import com.alura.literalura.service.ConvierteDatos;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 
+import java.time.LocalDate;
 import java.util.Scanner;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
+@Component
 public class Principal {
     private static final String URL_BASE = "https://gutendex.com/books/";
     private static ConsumoAPI consumoAPI = new ConsumoAPI();
@@ -21,13 +25,14 @@ public class Principal {
     private static Scanner teclado = new Scanner(System.in);
     //private List<Libro> libros;
     private List<DatosLibros> datosLibros = new ArrayList<>();
-    private LibroRepository repositorio;
-    //private AutorRepository autorRepository;
+    private final LibroRepository repositorio;
+    private final AutorRepository autorRepository;
 
     //se añade clase repositorio desde la appLiteralura
-    public Principal(LibroRepository repository) {
+    @Autowired
+    public Principal(LibroRepository repository, AutorRepository autorRepository) {
         this.repositorio = repository;
-        //this.autorRepository = autorRepository;
+        this.autorRepository = autorRepository;
     }
 
     //private List<Libro> libro;
@@ -39,7 +44,7 @@ public class Principal {
                     1 - Buscar libros por titulo (BDD)
                     2 - Mostrar libros buscados
                     3 - Muestrta autores de los libros consultados
-                    4 - Buscar autores vivos en determinado año de libros consultados
+                    4 - Buscar autores vivos en determinado año de libros consultados (BDD)
                     5 - Consultar cantidad de libros por idioma
 
                     0 - Salir
@@ -79,10 +84,13 @@ public class Principal {
 
 
 
-
+////////////////////////AÑADIR NUEVO LIBRO BDD////////////////////////////////////////
     public Libro convertirADatosEntidad(DatosLibros datosLibros) {
         Libro libro = new Libro();
         libro.setTitulo(datosLibros.titulo());
+//        libro.setAutor(datosLibros.autor().stream()
+//                .map(DatosAutor::nombre)
+//                .collect(Collectors.joining(", ")));
         libro.setAutor(datosLibros.autor().stream().map(DatosAutor::nombre).collect(Collectors.toList()).toString());
         libro.setIdiomas(String.join(", ", datosLibros.idiomas()));
         libro.setNumeroDeDescargas(datosLibros.numeroDeDescargas());
@@ -96,6 +104,14 @@ public class Principal {
         return libro;
     }
 
+//    public Autor convertirADatosAutorEntidad(DatosAutor datosAutor) {
+//        Autor autor = new Autor();
+//        autor.setNombre(datosAutor.nombre());
+//        autor.setFechaDeNacimiento(datosAutor.fechaDeNacimiento());
+//        autor.setFechaDeMuerte(datosAutor.fechaDeMuerte());
+//        return autor;
+//    }
+
     private void buscarLibroWeb() {
         System.out.println("Ingresa el nombre del libro que desea buscar");
         var tituloLibro = teclado.nextLine();
@@ -107,9 +123,6 @@ public class Principal {
                 .findFirst();
         if(libroBuscado.isPresent()){
             DatosLibros libroEncontrado = libroBuscado.get();//
-//            System.out.println("Fecha de nacimiento: " + libroEncontrado.fechaDeNacimiento());
-//            System.out.println("Fecha de Muerte: " + libroEncontrado.fechaDeMuerte());
-//            System.out.println("Datos Autor: " + libroEncontrado.autor());
             datosLibros.add(libroEncontrado);
             Libro libroEnt = convertirADatosEntidad(libroEncontrado);
             repositorio.save(libroEnt);
@@ -121,7 +134,7 @@ public class Principal {
     }
 
 
-
+/////////////////////////MOSTRAR LIBROS BUSCADOS//////////////////////////////////
     private void mostrarLibrosBuscados() {
         if (datosLibros.isEmpty()){
             System.out.println("No hay libros buscados");
@@ -130,7 +143,7 @@ public class Principal {
             datosLibros.forEach(System.out::println);
         }
     }
-
+///////////////////////MOSTRAR LISTA DE AUTORES CONSULTADOS/////////////////////
     private void mostrarListaAutores() {
         if(datosLibros.isEmpty()){
             System.out.println("No hay libros buscados");
@@ -140,32 +153,53 @@ public class Principal {
         }
     }
 
-
+////////////////BUSCAR AUTORES VIVOS EN CIERTA FECHA////////////////////////
     private void buscarAutoresVivosPorFecha() {
         System.out.println("Ingresa el año para buscar autores vivos:");
         int año = teclado.nextInt();
         teclado.nextLine(); // Consumir la nueva línea
-        //de base de datos
 
 
-        List<DatosAutor> autoresVivos = datosLibros.stream()
-                .flatMap(libro -> libro.autor().stream())
-                .filter(autor -> {
-                    int nacimiento = Integer.parseInt(autor.fechaDeNacimiento());
-                    int muerte = autor.fechaDeMuerte().isEmpty() ? Integer.MAX_VALUE : Integer.parseInt(autor.fechaDeMuerte());
-                    return año >= nacimiento && año <= muerte;
-                })
-                .collect(Collectors.toList());
-        if (autoresVivos.isEmpty()){
-            System.out.println("No se encontro ningun autor que viva en el año " + año);
+/////////////////////SIN BASE DE DATOS/////////////////////////////////////////
+//        List<DatosAutor> autoresVivos = datosLibros.stream()
+//                .flatMap(libro -> libro.autor().stream())
+//                .filter(autor -> {
+//                    int nacimiento = Integer.parseInt(autor.fechaDeNacimiento());
+//                    int muerte = autor.fechaDeMuerte().isEmpty() ? Integer.MAX_VALUE : Integer.parseInt(autor.fechaDeMuerte());
+//                    return año >= nacimiento && año <= muerte;
+//                })
+//                .collect(Collectors.toList());
+//        if (autoresVivos.isEmpty()){
+//            System.out.println("No se encontro ningun autor que viva en el año " + año);
+//        } else {
+//            System.out.println("Los autores que vivieron en el año " + año + " son:");
+//
+//            autoresVivos.forEach(System.out::println);
+//        }
+
+        //////////////////////////////CON BASE DE DATOS/////////////////////////
+        String yearString = String.valueOf(año);
+        List<Libro> libros = repositorio.findLibrosPorAutoresVivosEnAno(yearString);
+
+        if (libros.isEmpty()) {
+            System.out.println("No se encontró ningún autor que viva en el año " + año);
         } else {
-            System.out.println("Los autores que vivieron en el año " + año + " son:");
+            System.out.println("Libros encontrados con autores vivos en el año " + año + ":");
+            libros.forEach(libro -> {
 
-            autoresVivos.forEach(System.out::println);
+//                String autores = libro.getAutores().stream()
+//                        .map(Autor::getNombre)
+//                        .collect(Collectors.joining(", "));
+                System.out.println("Libro: " + libro.getTitulo() + ", del Autor: "
+                        + libro.getAutor() + " (" + libro.getFechaDeNacimiento() + "-"
+                        + libro.getFechaDeMuerte() + ")");
+                });
         }
+
+//
     }
 
-
+///////////////ESTADISTICA DE LIBROS POR IDIOMA/////////////////////////////
     private void CantidadDeLibrosPorIdioma() {
         System.out.println("Ingresa el idioma para ver la estadística:(en ingles "+"en"+" y en español "+"es"+")");
         String idioma = teclado.nextLine();

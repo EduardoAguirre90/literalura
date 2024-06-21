@@ -14,24 +14,27 @@ public class Libro {
     private Long Id;
     @Column(unique = true)
     private String titulo;
-
-    private String nombre;
     private String idiomas;
     private Double numeroDeDescargas;
     private String fechaDeNacimiento;
     private String fechaDeMuerte;
-
     private String autor;
 
-//    @ManyToMany(mappedBy = "autores")
-//    private List<Libro> libros;
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "libro_autor",
+            joinColumns = @JoinColumn(name = "libro_id"),
+            inverseJoinColumns = @JoinColumn(name = "autor_id")
+    )
+
+    private List<Autor> autores;
 
     public Long getId() {
         return Id;
     }
 
     public void setId(Long id) {
-        Id = id;
+        this.Id = id;
     }
 
     public String getTitulo() {
@@ -44,14 +47,6 @@ public class Libro {
 
     public String getAutor() {
         return autor;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
     }
 
     public void setAutor(String autor) {
@@ -90,25 +85,28 @@ public class Libro {
         this.fechaDeMuerte = fechaDeMuerte;
     }
 
+    public List<Autor> getAutores() { return autores; }
+
+    public void setAutores(List<Autor> autores) { this.autores = autores; }
+
     // Método auxiliar para obtener el año a partir de una fecha en formato yyyy-MM-dd
-    private int obtenerAnio(String fecha) {
-        if (fecha != null && !fecha.isEmpty()) {
-            return Integer.parseInt(fecha.substring(0, 4));
-        }
-        return 0;
-    }
+//    private int obtenerAnio(String fecha) {
+//        if (fecha != null && !fecha.isEmpty()) {
+//            return Integer.parseInt(fecha.substring(0, 4));
+//        }
+//        return 0;
+//    }
 
 
     @Override
     public String toString() {
         return
-                "DatosLibros" +
+                "Libro{" +
                 "titulo='" + titulo + '\'' +
                 ", autor='" + autor + '\'' +
-                ", fechaNacimientoAutor='" + fechaDeNacimiento + '\'' +
-                ", fechaMuerteAutor='" + fechaDeMuerte + '\'' +
                 ", idiomas='" + idiomas + '\'' +
-                ", numeroDeDescargas='" + numeroDeDescargas + '\'';
+                ", numeroDeDescargas='" + numeroDeDescargas + '\''+
+                "}";
     }
 
 }
